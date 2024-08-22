@@ -17,6 +17,8 @@ import { PasswordService } from "../services/password.service";
 import { UserModel } from "src/schemas/user.schema";
 import { Preference } from "src/interface/preference.interface";
 import { PreferenceDto } from "src/dto/preferenceDto";
+import { Culture } from "src/interface/culture.interface";
+import { CultureDto } from "src/dto/cultureDto";
 
 @Injectable()
 export class UserService {
@@ -26,6 +28,8 @@ export class UserService {
     private userModel: mongoose.Model<User>,
     @Inject(constants.PREFERENCE_MODEL)
     private preferenceModel: mongoose.Model<Preference>,
+    @Inject(constants.CULTURE_MODEL)
+    private cultureModel: mongoose.Model<Culture>,
     private logger: LoggerService,
     private jwtService: JwtService,
     private passwordService: PasswordService
@@ -279,6 +283,42 @@ export class UserService {
     } catch (err) {
       this.logger.error(
         `addOrUpdatePreferenceByUser failed with userId - ${userId} with error ${err}`,
+        `${this.AppName}`
+      );
+      throw new HttpException(
+        {
+          status: err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+          message: err?.message ?? "Something went wrong",
+        },
+        err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async addOrUpdateCultureByUser(
+    userId: string,
+    cultureDto: CultureDto
+  ): Promise<Culture> {
+    this.logger.log(
+      `addOrUpdateCultureByUser started for userid - ${userId}`,
+      `${this.AppName}`
+    );
+    try {
+      const pref = await this.cultureModel
+        .findOneAndUpdate({ user_id: userId }, cultureDto, {
+          upsert: true,
+          new: true,
+        })
+        .lean()
+        .exec();
+      this.logger.log(
+        `addOrUpdateCultureByUser ended for userid - ${userId}`,
+        `${this.AppName}`
+      );
+      return pref;
+    } catch (err) {
+      this.logger.error(
+        `addOrUpdateCultureByUser failed with userId - ${userId} with error ${err}`,
         `${this.AppName}`
       );
       throw new HttpException(

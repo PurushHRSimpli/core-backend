@@ -28,6 +28,8 @@ import { AuthGuard } from "../guards/auth.guard";
 import { ResponseMessage } from "../decorators/responseMessageDecator";
 import { Preference } from "src/interface/preference.interface";
 import { PreferenceDto } from "src/dto/preferenceDto";
+import { Culture } from "src/interface/culture.interface";
+import { CultureDto } from "src/dto/cultureDto";
 
 @Controller("user")
 export class UserController {
@@ -148,6 +150,25 @@ export class UserController {
     return await this.userService.addOrUpdatePreferenceByUser(
       userId,
       preferenceDto
+    );
+  }
+
+  @HttpCode(200)
+  @UseGuards(AuthGuard)
+  @Put("/culture")
+  @ResponseMessage("Culture updated successfully")
+  async addorUpdateCulture(
+    @Body() cultureDto: CultureDto,
+    @Req() req
+  ): Promise<Culture> {
+    const userId = req?.user?.userId;
+    this.logger.log(
+      `addOrUpdateCulture started with userid - ${userId}`,
+      `${this.AppName}`
+    );
+    return await this.userService.addOrUpdateCultureByUser(
+      userId,
+      cultureDto
     );
   }
 
