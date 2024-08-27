@@ -1,14 +1,14 @@
-import * as mongoose from 'mongoose';
-import { Culture } from 'src/interface/culture.interface';
+import * as mongoose from "mongoose";
+import { Culture } from "src/interface/culture.interface";
 
 export const CultureSchema = new mongoose.Schema<Culture>({
   user_id: {
-    type:String, 
-    required:true
+    type: String,
+    required: true,
   },
   description: {
-    type:String, 
-    required:true
+    type: String,
+    required: true,
   },
   motivation: {
     solving_technical_problems: {
@@ -74,8 +74,10 @@ export const CultureSchema = new mongoose.Schema<Culture>({
   not_interested_technologies: [String],
 });
 
+CultureSchema.index({ user_id: 1 }, { unique: true });
+
 export const CultureModel: mongoose.Model<Culture> = mongoose.model<Culture>(
-  'culture',
+  "culture",
   CultureSchema,
-  'culture'
+  "culture"
 );
