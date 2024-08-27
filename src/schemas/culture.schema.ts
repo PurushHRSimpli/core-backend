@@ -2,7 +2,14 @@ import * as mongoose from 'mongoose';
 import { Culture } from 'src/interface/culture.interface';
 
 export const CultureSchema = new mongoose.Schema<Culture>({
-  description: String,
+  user_id: {
+    type:String, 
+    required:true
+  },
+  description: {
+    type:String, 
+    required:true
+  },
   motivation: {
     solving_technical_problems: {
       type: Boolean,

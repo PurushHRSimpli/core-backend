@@ -1,6 +1,7 @@
 import { Document } from "mongoose";
 
 export interface Culture extends Document{
+    readonly user_id: string;
     readonly description: string;
     readonly motivation:{solving_technical_problems: boolean, building_products: boolean};
     readonly career_track_next_five_years:{individual_contributor: boolean, manager: boolean};

@@ -8,6 +8,7 @@ export const constants = {
   COMPANY_MODEL: "COMPANY_MODEL",
   PREFERENCE_MODEL: "PREFERENCE_MODEL",
   CULTURE_MODEL: "CULTURE_MODEL",
+  OVERVIEW_MODEL: "OVERVIEW_MODEL",
   db_url: process.env.DB_BASE_URL,
   user_type: ["wholeseller", "retailer"],
   order_status: ["placed", "packed", "out_for_delivery", "delevired"],

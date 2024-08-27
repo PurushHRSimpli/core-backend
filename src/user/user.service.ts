@@ -19,6 +19,11 @@ import { Preference } from "src/interface/preference.interface";
 import { PreferenceDto } from "src/dto/preferenceDto";
 import { Culture } from "src/interface/culture.interface";
 import { CultureDto } from "src/dto/cultureDto";
+import { Overview } from "../interface/overview.interface";
+import { OverviewDto } from "../dto/overviewDto";
+import { CultureModel } from "src/schemas/culture.schema";
+import { PreferenceModel } from "src/schemas/preference.schema";
+
 
 @Injectable()
 export class UserService {
@@ -177,6 +182,8 @@ export class UserService {
     }
   }
 
+
+
   async updateUser(userId: string, updateDto: UpdateUserDto): Promise<User> {
     this.logger.log(
       `updateUser started with userId - ${userId}`,
@@ -330,6 +337,57 @@ export class UserService {
       );
     }
   }
+
+
+async getOverviewByUser(userId: string): Promise<OverviewDto | null> {
+  this.logger.log(`getOverviewByUser started for userId - ${userId}`, `${this.AppName}`);
+  
+  try {
+    const culture: Culture | null = await this.cultureModel.findOne({ user_id: userId }).lean().exec();
+    const preference: Preference | null = await this.preferenceModel.findOne({ user_id: userId }).lean().exec();
+
+    if (!culture || !preference) {
+      return null;
+    }
+
+    const overviewDTO: OverviewDto = {
+      user_id: userId,
+      description: culture.description,
+      motivation: culture.motivation,
+      career_track_next_five_years: culture.career_track_next_five_years,
+      working_environment: culture.working_environment,
+      remote_working_policy: culture.remote_working_policy,
+      quiet_office: culture.quiet_office,
+      interested_markets: preference.interested_markets,
+      not_interested_markets: culture.not_interested_markets,
+      interested_technologies: culture.interested_technologies,
+      not_interested_technologies: culture.not_interested_technologies,
+      where_in_job_search: preference.where_in_job_search,
+      sponsorship_requirement_to_work_in_us: preference.sponsorship_requirement_to_work_in_us,
+      legally_to_work_in_us: preference.legally_to_work_in_us,
+      job_type: preference.job_type,
+      preferred_locations: preference.preferred_locations,
+      open_to_work_remotely: preference.open_to_work_remotely,
+      desired_salary_currency: preference.desired_salary_currency,
+      desired_salary_amount: preference.desired_salary_amount,
+      company_size_preferences: preference.company_size_preferences,
+    };
+
+    this.logger.log(`getOverviewByUser ended for userId - ${userId}`, `${this.AppName}`);
+    return overviewDTO;
+  } catch (error) {
+    this.logger.error(`getOverviewByUser failed for userId - ${userId} with error ${error}`, `${this.AppName}`);
+    throw new HttpException(
+      {
+        status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error?.message ?? "Something went wrong",
+      },
+      error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+
+  
 
   async updatePasswordThroughSettings(
     updateDto: UpdatePasswordThroughSettingsDto,

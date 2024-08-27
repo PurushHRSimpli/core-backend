@@ -10,6 +10,7 @@ import {
   UseGuards,
   Req,
   Put,
+  Param,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User, loginUser } from "../interface/user.interface";
@@ -30,6 +31,7 @@ import { Preference } from "src/interface/preference.interface";
 import { PreferenceDto } from "src/dto/preferenceDto";
 import { Culture } from "src/interface/culture.interface";
 import { CultureDto } from "src/dto/cultureDto";
+import { OverviewDto } from "src/dto/overviewDto";
 
 @Controller("user")
 export class UserController {
@@ -237,5 +239,37 @@ export class UserController {
       `${this.AppName}`
     );
     return this.userService.updateGeneralSettings(updateGeneral, userId);
+  }
+
+  @Get('overview')
+  @UseGuards(AuthGuard) 
+  async getOverviewByUserId(
+    @Req() userId: string
+  ): Promise<OverviewDto> {
+    this.logger.log(`getOverviewByUserId started for userId - ${userId}`,`${this.AppName}`);
+    try {
+      const overview = await this.userService.getOverviewByUser(userId);
+      if (!overview) {
+        this.logger.warn(`No overview found for userId - ${userId}`, `${this.AppName}`);
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            message: 'Overview not found for the specified user',
+          },
+          HttpStatus.NOT_FOUND
+        );
+      }
+      this.logger.log(`getOverviewByUserId ended for userId - ${userId}`,`${this.AppName}`);
+      return overview;
+    } catch (error) {
+      this.logger.error(`getOverviewByUserId failed for userId - ${userId} with error ${error.message}`,`${this.AppName}`);
+      throw new HttpException(
+        {
+          status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error?.message ?? 'Something went wrong',
+        },
+        error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 }

@@ -3,7 +3,6 @@ import {IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString} 
 export class MotivationDto {
     @IsBoolean()
     solving_technical_problems: boolean;
-  
     @IsBoolean()
     building_products: boolean;
   }
@@ -11,7 +10,6 @@ export class MotivationDto {
   export class CareerTrackDto {
     @IsBoolean()
     individual_contributor: boolean;
-  
     @IsBoolean()
     manager: boolean;
   }
