@@ -241,7 +241,7 @@ export class UserController {
     return this.userService.updateGeneralSettings(updateGeneral, userId);
   }
 
-  @Get('overview')
+  @Get('/overview')
   @UseGuards(AuthGuard) 
   async getOverviewByUserId(
     @Req() userId: string
