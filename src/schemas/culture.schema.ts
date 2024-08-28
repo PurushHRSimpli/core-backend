@@ -8,7 +8,7 @@ export const CultureSchema = new mongoose.Schema<Culture>({
   },
   description: {
     type:String, 
-    required:true
+    // required:true
   },
   motivation: {
     solving_technical_problems: {
@@ -73,6 +73,9 @@ export const CultureSchema = new mongoose.Schema<Culture>({
   interested_technologies: [String],
   not_interested_technologies: [String],
 });
+
+CultureSchema.index({ user_id: 1 }, { unique: true });
+
 
 export const CultureModel: mongoose.Model<Culture> = mongoose.model<Culture>(
   'culture',

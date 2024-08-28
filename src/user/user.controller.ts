@@ -241,35 +241,19 @@ export class UserController {
     return this.userService.updateGeneralSettings(updateGeneral, userId);
   }
 
-  @Get('/overview')
-  @UseGuards(AuthGuard) 
-  async getOverviewByUserId(
-    @Req() userId: string
-  ): Promise<OverviewDto> {
-    this.logger.log(`getOverviewByUserId started for userId - ${userId}`,`${this.AppName}`);
-    try {
-      const overview = await this.userService.getOverviewByUser(userId);
-      if (!overview) {
-        this.logger.warn(`No overview found for userId - ${userId}`, `${this.AppName}`);
-        throw new HttpException(
-          {
-            status: HttpStatus.NOT_FOUND,
-            message: 'Overview not found for the specified user',
-          },
-          HttpStatus.NOT_FOUND
-        );
-      }
-      this.logger.log(`getOverviewByUserId ended for userId - ${userId}`,`${this.AppName}`);
-      return overview;
-    } catch (error) {
-      this.logger.error(`getOverviewByUserId failed for userId - ${userId} with error ${error.message}`,`${this.AppName}`);
-      throw new HttpException(
-        {
-          status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
-          message: error?.message ?? 'Something went wrong',
-        },
-        error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+  @HttpCode(200)
+  @Get("/overview")
+  @UseGuards(AuthGuard)
+  @ResponseMessage("General updated successfully")
+  async getOverviewByUserId(@Req() req): Promise<OverviewDto> {
+    const userId = req?.user?.userId;
+    this.logger.log(
+      `getOverviewByUserId started for userId - ${userId}`,
+      `${this.AppName}`
+    );
+
+    const overview = await this.userService.getOverviewByUser(userId);
+
+    return overview;
   }
 }
