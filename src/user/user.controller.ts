@@ -157,7 +157,7 @@ export class UserController {
 
   @HttpCode(200)
   @UseGuards(AuthGuard)
-  @Put("/culture")
+  @Put("/settings/culture")
   @ResponseMessage("Culture updated successfully")
   async addorUpdateCulture(
     @Body() cultureDto: CultureDto,
@@ -168,10 +168,7 @@ export class UserController {
       `addOrUpdateCulture started with userid - ${userId}`,
       `${this.AppName}`
     );
-    return await this.userService.addOrUpdateCultureByUser(
-      userId,
-      cultureDto
-    );
+    return await this.userService.addOrUpdateCultureByUser(userId, cultureDto);
   }
 
   @HttpCode(200)
