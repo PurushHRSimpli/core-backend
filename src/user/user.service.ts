@@ -336,52 +336,72 @@ export class UserService {
   }
 
 
-async getOverviewByUser(userId: string): Promise<OverviewDto | null> {
-  this.logger.log(`getOverviewByUser started for userId - ${userId}`, `${this.AppName}`);
+  async getOverviewByUser(userId: string): Promise<Overview> {
+    this.logger.log(`getOverviewByUser started for userId - ${userId}`, `${this.AppName}`);
   
-  try {
-    const culture: Culture | null = await this.cultureModel.findOne({ user_id: userId }).lean().exec();
-    const preference: Preference | null = await this.preferenceModel.findOne({ user_id: userId }).lean().exec();
+    try {
+        const culture: Culture = await this.cultureModel.findOne({ user_id: userId }).lean().exec();
+        const preference: Preference = await this.preferenceModel.findOne({ user_id: userId }).lean().exec();
+        const user: User = await this.userModel.findOne({ user_id: userId }).lean().exec();
 
-    if (!culture || !preference) {
-      return null;
+        const overview: Overview = {
+            user_id: userId,
+            phone_number: user.phone_number || '',
+            email: user.email || '',
+            full_name: user.full_name || '',
+            current_company: user.current_company || '',
+            cv: user.cv || '',
+            is_community_owner: user.is_community_owner || false,
+            city: user.city || '',
+            current_role: user.current_role || '',
+            years_of_experience: user.years_of_experience || 0,
+            student_or_new_graduate: user.student_or_new_graduate || false,
+            currently_employed: user.currently_employed || false,
+            linkedin_profile: user.linkedin_profile || '',
+            term_and_conditions: user.term_and_conditions || false,
+            privacy_mode: user.privacy_mode || 'public',
+            user_name: user.user_name || '',
+            profile_pic: user.profile_pic || '',
+            description: culture.description || '',
+            motivation: culture.motivation || { solving_technical_problems: false, building_products: false },
+            career_track_next_five_years: culture.career_track_next_five_years || { individual_contributor: false, manager: false },
+            working_environment: culture.working_environment || { clear_roles_responsibilites: false, employees_carry_out_multiple_tasks: false },
+            remote_working_policy: culture.remote_working_policy || { very_important: false, important: false, not_important: false },
+            quiet_office: culture.quiet_office || { very_important: false, important: false, not_important: false },
+            interested_markets: preference.interested_markets || [],
+            not_interested_markets: culture.not_interested_markets || [],
+            interested_technologies: culture.interested_technologies || [],
+            not_interested_technologies: culture.not_interested_technologies || [],
+            where_in_job_search: preference.where_in_job_search || '',
+            sponsorship_requirement_to_work_in_us: preference.sponsorship_requirement_to_work_in_us || false,
+            legally_to_work_in_us: preference.legally_to_work_in_us || false,
+            job_type: preference.job_type || '',
+            preferred_locations: preference.preferred_locations || [],
+            open_to_work_remotely: preference.open_to_work_remotely || false,
+            desired_salary_currency: preference.desired_salary_currency || '',
+            desired_salary_amount: preference.desired_salary_amount || 0,
+            company_size_preferences: preference.company_size_preferences || {
+                seed: { ideal: false, yes: false, no: false },
+                early: { ideal: false, yes: false, no: false },
+                mid_size: { ideal: false, yes: false, no: false },
+                large: { ideal: false, yes: false, no: false },
+                very_large: { ideal: false, yes: false, no: false },
+                massive: { ideal: false, yes: false, no: false },
+            },
+        };
+
+        this.logger.log(`getOverviewByUser ended for userId - ${userId}`, `${this.AppName}`);
+        return overview;
+    } catch (error) {
+        this.logger.error(`getOverviewByUser failed for userId - ${userId} with error ${error}`, `${this.AppName}`);
+        throw new HttpException(
+            {
+                status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+                message: error?.message ?? "Something went wrong",
+            },
+            error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
-
-    const overviewDTO: OverviewDto = {
-      user_id: userId,
-      description: culture.description,
-      motivation: culture.motivation,
-      career_track_next_five_years: culture.career_track_next_five_years,
-      working_environment: culture.working_environment,
-      remote_working_policy: culture.remote_working_policy,
-      quiet_office: culture.quiet_office,
-      interested_markets: preference.interested_markets,
-      not_interested_markets: culture.not_interested_markets,
-      interested_technologies: culture.interested_technologies,
-      not_interested_technologies: culture.not_interested_technologies,
-      where_in_job_search: preference.where_in_job_search,
-      sponsorship_requirement_to_work_in_us: preference.sponsorship_requirement_to_work_in_us,
-      legally_to_work_in_us: preference.legally_to_work_in_us,
-      job_type: preference.job_type,
-      preferred_locations: preference.preferred_locations,
-      open_to_work_remotely: preference.open_to_work_remotely,
-      desired_salary_currency: preference.desired_salary_currency,
-      desired_salary_amount: preference.desired_salary_amount,
-      company_size_preferences: preference.company_size_preferences,
-    };
-
-    this.logger.log(`getOverviewByUser ended for userId - ${userId}`, `${this.AppName}`);
-    return overviewDTO;
-  } catch (error) {
-    this.logger.error(`getOverviewByUser failed for userId - ${userId} with error ${error}`, `${this.AppName}`);
-    throw new HttpException(
-      {
-        status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
-        message: error?.message ?? "Something went wrong",
-      },
-      error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
-    );
-  }
 }
 
   
