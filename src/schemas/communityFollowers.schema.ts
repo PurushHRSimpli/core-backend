@@ -1,9 +1,9 @@
 import * as mongoose from "mongoose";
-import { Followers } from "src/interface/communityFollowers.interface";
+import { CommunityFollowers } from "src/interface/communityFollowers.interface";
 import { CommunityModel } from "./community.schema";
 import { UserModel } from "./user.schema";
 
-export const followersSchema = new mongoose.Schema<Followers>(
+export const followersSchema = new mongoose.Schema<CommunityFollowers>(
   {
     community_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -24,5 +24,5 @@ export const followersSchema = new mongoose.Schema<Followers>(
   { timestamps: true }
 );
 
-export const FollowersModel: mongoose.Model<Followers> =
-  mongoose.model<Followers>("followers", followersSchema, "followers");
+export const FollowersModel: mongoose.Model<CommunityFollowers> =
+  mongoose.model<CommunityFollowers>("followers", followersSchema, "followers");
