@@ -342,7 +342,8 @@ export class UserService {
     try {
         const culture: Culture = await this.cultureModel.findOne({ user_id: userId }).lean().exec();
         const preference: Preference = await this.preferenceModel.findOne({ user_id: userId }).lean().exec();
-        const user: User = await this.userModel.findOne({ user_id: userId }).lean().exec();
+        const user: User = await this.userModel.findOne({ _id: userId }).lean().exec();
+
 
         const overview: Overview = {
             user_id: userId,
