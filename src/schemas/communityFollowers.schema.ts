@@ -1,5 +1,5 @@
 import * as mongoose from "mongoose";
-import { Followers } from "src/interface/followers.interface";
+import { Followers } from "src/interface/communityFollowers.interface";
 import { CommunityModel } from "./community.schema";
 import { UserModel } from "./user.schema";
 
