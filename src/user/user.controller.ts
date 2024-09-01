@@ -11,6 +11,7 @@ import {
   Req,
   Put,
   Param,
+  Query,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User, loginUser } from "../interface/user.interface";
@@ -253,4 +254,24 @@ export class UserController {
 
     return overview;
   }
+
+@HttpCode(200)
+@Get("/overviews")
+@UseGuards(AuthGuard)
+@ResponseMessage("Fetched overviews successfully")
+async getAllUsersOverview(
+  @Req() req,
+  @Query('sortField') sortField: string = 'full_name',  // Default sort by 'full_name'
+  @Query('sortOrder') sortOrder: 'asc' | 'desc' = 'asc', // Default sort order is 'asc'
+  @Query('offset') offset: number = 0, // Default offset is 0
+  @Query('limit') limit: number = 10 // Default limit is 10
+): Promise<OverviewDto[]> {
+  this.logger.log(`getAllUsersOverview started`, `${this.AppName}`);
+
+  const overviews = await this.userService.getAllUsersOverview(sortField, sortOrder, offset, limit);
+
+  return overviews;
+}
+
+  
 }

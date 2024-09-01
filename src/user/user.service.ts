@@ -336,73 +336,314 @@ export class UserService {
   }
 
 
-  async getOverviewByUser(userId: string): Promise<Overview> {
-    this.logger.log(`getOverviewByUser started for userId - ${userId}`, `${this.AppName}`);
+//   async getOverviewByUser(userId: string): Promise<Overview> {
+//     this.logger.log(`getOverviewByUser started for userId - ${userId}`, `${this.AppName}`);
   
-    try {
-        const culture: Culture = await this.cultureModel.findOne({ user_id: userId }).lean().exec();
-        const preference: Preference = await this.preferenceModel.findOne({ user_id: userId }).lean().exec();
-        const user: User = await this.userModel.findOne({ _id: userId }).lean().exec();
+//     try {
+//         const culture: Culture = await this.cultureModel.findOne({ user_id: userId }).lean().exec();
+//         const preference: Preference = await this.preferenceModel.findOne({ user_id: userId }).lean().exec();
+//         const user: User = await this.userModel.findOne({ _id: userId }).lean().exec();
 
 
-        const overview: Overview = {
-            user_id: userId,
-            phone_number: user.phone_number || '',
-            email: user.email || '',
-            full_name: user.full_name || '',
-            current_company: user.current_company || '',
-            cv: user.cv || '',
-            is_community_owner: user.is_community_owner || false,
-            city: user.city || '',
-            current_role: user.current_role || '',
-            years_of_experience: user.years_of_experience || 0,
-            student_or_new_graduate: user.student_or_new_graduate || false,
-            currently_employed: user.currently_employed || false,
-            linkedin_profile: user.linkedin_profile || '',
-            term_and_conditions: user.term_and_conditions || false,
-            privacy_mode: user.privacy_mode || 'public',
-            user_name: user.user_name || '',
-            profile_pic: user.profile_pic || '',
-            description: culture.description || '',
-            motivation: culture.motivation || { solving_technical_problems: false, building_products: false },
-            career_track_next_five_years: culture.career_track_next_five_years || { individual_contributor: false, manager: false },
-            working_environment: culture.working_environment || { clear_roles_responsibilites: false, employees_carry_out_multiple_tasks: false },
-            remote_working_policy: culture.remote_working_policy || { very_important: false, important: false, not_important: false },
-            quiet_office: culture.quiet_office || { very_important: false, important: false, not_important: false },
-            interested_markets: preference.interested_markets || [],
-            not_interested_markets: culture.not_interested_markets || [],
-            interested_technologies: culture.interested_technologies || [],
-            not_interested_technologies: culture.not_interested_technologies || [],
-            where_in_job_search: preference.where_in_job_search || '',
-            sponsorship_requirement_to_work_in_us: preference.sponsorship_requirement_to_work_in_us || false,
-            legally_to_work_in_us: preference.legally_to_work_in_us || false,
-            job_type: preference.job_type || '',
-            preferred_locations: preference.preferred_locations || [],
-            open_to_work_remotely: preference.open_to_work_remotely || false,
-            desired_salary_currency: preference.desired_salary_currency || '',
-            desired_salary_amount: preference.desired_salary_amount || 0,
-            company_size_preferences: preference.company_size_preferences || {
-                seed: { ideal: false, yes: false, no: false },
-                early: { ideal: false, yes: false, no: false },
-                mid_size: { ideal: false, yes: false, no: false },
-                large: { ideal: false, yes: false, no: false },
-                very_large: { ideal: false, yes: false, no: false },
-                massive: { ideal: false, yes: false, no: false },
-            },
-        };
+//         const overview: Overview = {
+//             user_id: userId,
+//             phone_number: user.phone_number || '',
+//             email: user.email || '',
+//             full_name: user.full_name || '',
+//             current_company: user.current_company || '',
+//             cv: user.cv || '',
+//             is_community_owner: user.is_community_owner || false,
+//             city: user.city || '',
+//             current_role: user.current_role || '',
+//             years_of_experience: user.years_of_experience || 0,
+//             student_or_new_graduate: user.student_or_new_graduate || false,
+//             currently_employed: user.currently_employed || false,
+//             linkedin_profile: user.linkedin_profile || '',
+//             term_and_conditions: user.term_and_conditions || false,
+//             privacy_mode: user.privacy_mode || 'public',
+//             user_name: user.user_name || '',
+//             profile_pic: user.profile_pic || '',
+//             description: culture.description || '',
+//             motivation: culture.motivation || { solving_technical_problems: false, building_products: false },
+//             career_track_next_five_years: culture.career_track_next_five_years || { individual_contributor: false, manager: false },
+//             working_environment: culture.working_environment || { clear_roles_responsibilites: false, employees_carry_out_multiple_tasks: false },
+//             remote_working_policy: culture.remote_working_policy || { very_important: false, important: false, not_important: false },
+//             quiet_office: culture.quiet_office || { very_important: false, important: false, not_important: false },
+//             interested_markets: preference.interested_markets || [],
+//             not_interested_markets: culture.not_interested_markets || [],
+//             interested_technologies: culture.interested_technologies || [],
+//             not_interested_technologies: culture.not_interested_technologies || [],
+//             where_in_job_search: preference.where_in_job_search || '',
+//             sponsorship_requirement_to_work_in_us: preference.sponsorship_requirement_to_work_in_us || false,
+//             legally_to_work_in_us: preference.legally_to_work_in_us || false,
+//             job_type: preference.job_type || '',
+//             preferred_locations: preference.preferred_locations || [],
+//             open_to_work_remotely: preference.open_to_work_remotely || false,
+//             desired_salary_currency: preference.desired_salary_currency || '',
+//             desired_salary_amount: preference.desired_salary_amount || 0,
+//             company_size_preferences: preference.company_size_preferences || {
+//                 seed: { ideal: false, yes: false, no: false },
+//                 early: { ideal: false, yes: false, no: false },
+//                 mid_size: { ideal: false, yes: false, no: false },
+//                 large: { ideal: false, yes: false, no: false },
+//                 very_large: { ideal: false, yes: false, no: false },
+//                 massive: { ideal: false, yes: false, no: false },
+//             },
+//         };
 
-        this.logger.log(`getOverviewByUser ended for userId - ${userId}`, `${this.AppName}`);
-        return overview;
-    } catch (error) {
-        this.logger.error(`getOverviewByUser failed for userId - ${userId} with error ${error}`, `${this.AppName}`);
-        throw new HttpException(
-            {
-                status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
-                message: error?.message ?? "Something went wrong",
-            },
-            error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
-        );
-    }
+//         this.logger.log(`getOverviewByUser ended for userId - ${userId}`, `${this.AppName}`);
+//         return overview;
+//     } catch (error) {
+//         this.logger.error(`getOverviewByUser failed for userId - ${userId} with error ${error}`, `${this.AppName}`);
+//         throw new HttpException(
+//             {
+//                 status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+//                 message: error?.message ?? "Something went wrong",
+//             },
+//             error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+//         );
+//     }
+// }
+
+async getOverviewByUser(userId: string): Promise<Overview> {
+  this.logger.log(`getOverviewByUser started for userId - ${userId}`, `${this.AppName}`);
+
+  try {
+      const overviewData = await this.userModel.aggregate([
+          {
+              '$match': { '_id': new mongoose.Types.ObjectId(userId) }  
+          },
+          {
+              '$lookup': {
+                  'from': 'preference',  
+                  'localField': '_id',
+                  'foreignField': 'user_id',
+                  'as': 'preferences'
+              }
+          },
+          {
+              '$lookup': {
+                  'from': 'culture',  
+                  'localField': '_id',
+                  'foreignField': 'user_id',
+                  'as': 'cultures'
+              }
+          },
+          {
+              '$unwind': { path: '$preferences', preserveNullAndEmptyArrays: true }  // Unwind preferences if available
+          },
+          {
+              '$unwind': { path: '$cultures', preserveNullAndEmptyArrays: true }  // Unwind cultures if available
+          },
+          {
+              '$project': {
+                  user_id: '$_id',
+                  phone_number: { $ifNull: ['$phone_number', ''] },
+                  email: { $ifNull: ['$email', ''] },
+                  full_name: { $ifNull: ['$full_name', ''] },
+                  current_company: { $ifNull: ['$current_company', ''] },
+                  cv: { $ifNull: ['$cv', ''] },
+                  is_community_owner: { $ifNull: ['$is_community_owner', false] },
+                  city: { $ifNull: ['$city', ''] },
+                  current_role: { $ifNull: ['$current_role', ''] },
+                  years_of_experience: { $ifNull: ['$years_of_experience', 0] },
+                  student_or_new_graduate: { $ifNull: ['$student_or_new_graduate', false] },
+                  currently_employed: { $ifNull: ['$currently_employed', false] },
+                  linkedin_profile: { $ifNull: ['$linkedin_profile', ''] },
+                  term_and_conditions: { $ifNull: ['$term_and_conditions', false] },
+                  privacy_mode: { $ifNull: ['$privacy_mode', 'public'] },
+                  user_name: { $ifNull: ['$user_name', ''] },
+                  profile_pic: { $ifNull: ['$profile_pic', ''] },
+                  description: { $ifNull: ['$cultures.description', ''] },
+                  motivation: { $ifNull: ['$cultures.motivation', { solving_technical_problems: false, building_products: false }] },
+                  career_track_next_five_years: { $ifNull: ['$cultures.career_track_next_five_years', { individual_contributor: false, manager: false }] },
+                  working_environment: { $ifNull: ['$cultures.working_environment', { clear_roles_responsibilites: false, employees_carry_out_multiple_tasks: false }] },
+                  remote_working_policy: { $ifNull: ['$cultures.remote_working_policy', { very_important: false, important: false, not_important: false }] },
+                  quiet_office: { $ifNull: ['$cultures.quiet_office', { very_important: false, important: false, not_important: false }] },
+                  interested_markets: { $ifNull: ['$preferences.interested_markets', []] },
+                  not_interested_markets: { $ifNull: ['$cultures.not_interested_markets', []] },
+                  interested_technologies: { $ifNull: ['$cultures.interested_technologies', []] },
+                  not_interested_technologies: { $ifNull: ['$cultures.not_interested_technologies', []] },
+                  where_in_job_search: { $ifNull: ['$preferences.where_in_job_search', ''] },
+                  sponsorship_requirement_to_work_in_us: { $ifNull: ['$preferences.sponsorship_requirement_to_work_in_us', false] },
+                  legally_to_work_in_us: { $ifNull: ['$preferences.legally_to_work_in_us', false] },
+                  job_type: { $ifNull: ['$preferences.job_type', ''] },
+                  preferred_locations: { $ifNull: ['$preferences.preferred_locations', []] },
+                  open_to_work_remotely: { $ifNull: ['$preferences.open_to_work_remotely', false] },
+                  desired_salary_currency: { $ifNull: ['$preferences.desired_salary_currency', ''] },
+                  desired_salary_amount: { $ifNull: ['$preferences.desired_salary_amount', 0] },
+                  company_size_preferences: { 
+                      $ifNull: [
+                          '$preferences.company_size_preferences',
+                          {
+                              seed: { ideal: false, yes: false, no: false },
+                              early: { ideal: false, yes: false, no: false },
+                              mid_size: { ideal: false, yes: false, no: false },
+                              large: { ideal: false, yes: false, no: false },
+                              very_large: { ideal: false, yes: false, no: false },
+                              massive: { ideal: false, yes: false, no: false }
+                          }
+                      ]
+                  }
+              }
+          }
+      ]);
+
+      const overview: Overview = overviewData[0] ;
+
+      this.logger.log(`getOverviewByUser ended for userId - ${userId}`, `${this.AppName}`);
+      return overview;
+  } catch (error) {
+      this.logger.error(`getOverviewByUser failed for userId - ${userId} with error ${error}`, `${this.AppName}`);
+      throw new HttpException(
+          {
+              status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+              message: error?.message ?? "Something went wrong",
+          },
+          error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+  }
+}
+
+
+async getAllUsersOverview(
+  sortField: string,
+  sortOrder: 'asc' | 'desc',
+  offset: number,
+  limit: number
+): Promise<OverviewDto[]> {
+  this.logger.log(`getAllUsersOverview started`, `${this.AppName}`);
+
+  try {
+    // Convert 'asc'/'desc' to 1/-1 for MongoDB sort order
+    const sortOrderValue = sortOrder === 'asc' ? 1 : -1;
+
+    const overviews = await this.userModel.aggregate([
+      // Lookup preferences
+      {
+        $lookup: {
+          from: 'preferences',
+          localField: '_id',
+          foreignField: 'user_id',
+          as: 'preferences',
+        },
+      },
+      // Lookup cultures
+      {
+        $lookup: {
+          from: 'cultures',
+          localField: '_id',
+          foreignField: 'user_id',
+          as: 'cultures',
+        },
+      },
+      // Unwind preferences and cultures arrays to merge
+      { $unwind: { path: '$preferences', preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: '$cultures', preserveNullAndEmptyArrays: true } },
+      // Add necessary fields for Overview
+      {
+        $addFields: {
+          user_id: '$_id',
+          phone_number: '$phone_number',
+          email: '$email',
+          full_name: '$full_name',
+          current_company: '$current_company',
+          cv: '$cv',
+          is_community_owner: '$is_community_owner',
+          city: '$city',
+          current_role: '$current_role',
+          years_of_experience: '$years_of_experience',
+          student_or_new_graduate: '$student_or_new_graduate',
+          currently_employed: '$currently_employed',
+          linkedin_profile: '$linkedin_profile',
+          term_and_conditions: '$term_and_conditions',
+          privacy_mode: '$privacy_mode',
+          user_name: '$user_name',
+          profile_pic: '$profile_pic',
+          description: '$cultures.description',
+          motivation: '$cultures.motivation',
+          career_track_next_five_years: '$cultures.career_track_next_five_years',
+          working_environment: '$cultures.working_environment',
+          remote_working_policy: '$cultures.remote_working_policy',
+          quiet_office: '$cultures.quiet_office',
+          interested_markets: '$preferences.interested_markets',
+          not_interested_markets: '$preferences.not_interested_markets',
+          interested_technologies: '$preferences.interested_technologies',
+          not_interested_technologies: '$preferences.not_interested_technologies',
+          where_in_job_search: '$preferences.where_in_job_search',
+          sponsorship_requirement_to_work_in_us: '$preferences.sponsorship_requirement_to_work_in_us',
+          legally_to_work_in_us: '$preferences.legally_to_work_in_us',
+          job_type: '$preferences.job_type',
+          preferred_locations: '$preferences.preferred_locations',
+          open_to_work_remotely: '$preferences.open_to_work_remotely',
+          desired_salary_currency: '$preferences.desired_salary_currency',
+          desired_salary_amount: '$preferences.desired_salary_amount',
+          company_size_preferences: '$preferences.company_size_preferences',
+        },
+      },
+      // Sort, skip, and limit the results
+      { $sort: { [sortField]: sortOrderValue } },
+      { $skip: offset },
+      { $limit: limit },
+      // Project the final shape of the overview
+      {
+        $project: {
+          _id: 0, // Exclude the original _id field
+          user_id: 1,
+          phone_number: 1,
+          email: 1,
+          full_name: 1,
+          current_company: 1,
+          cv: 1,
+          is_community_owner: 1,
+          city: 1,
+          current_role: 1,
+          years_of_experience: 1,
+          student_or_new_graduate: 1,
+          currently_employed: 1,
+          linkedin_profile: 1,
+          term_and_conditions: 1,
+          privacy_mode: 1,
+          user_name: 1,
+          profile_pic: 1,
+          description: 1,
+          motivation: 1,
+          career_track_next_five_years: 1,
+          working_environment: 1,
+          remote_working_policy: 1,
+          quiet_office: 1,
+          interested_markets: 1,
+          not_interested_markets: 1,
+          interested_technologies: 1,
+          not_interested_technologies: 1,
+          where_in_job_search: 1,
+          sponsorship_requirement_to_work_in_us: 1,
+          legally_to_work_in_us: 1,
+          job_type: 1,
+          preferred_locations: 1,
+          open_to_work_remotely: 1,
+          desired_salary_currency: 1,
+          desired_salary_amount: 1,
+          company_size_preferences: 1,
+        },
+      },
+    ]);
+
+    this.logger.log(`getAllUsersOverview ended`, `${this.AppName}`);
+    return overviews;
+  } catch (error) {
+    this.logger.error(
+      `getAllUsersOverview failed with error ${error}`,
+      `${this.AppName}`
+    );
+    throw new HttpException(
+      {
+        status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error?.message ?? "Something went wrong",
+      },
+      error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
 }
 
   
