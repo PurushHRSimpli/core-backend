@@ -515,11 +515,9 @@ async getAllUsersOverview(
   this.logger.log(`getAllUsersOverview started`, `${this.AppName}`);
 
   try {
-    // Convert 'asc'/'desc' to 1/-1 for MongoDB sort order
     const sortOrderValue = sortOrder === 'asc' ? 1 : -1;
 
     const overviews = await this.userModel.aggregate([
-      // Lookup preferences
       {
         $lookup: {
           from: 'preferences',
@@ -528,7 +526,6 @@ async getAllUsersOverview(
           as: 'preferences',
         },
       },
-      // Lookup cultures
       {
         $lookup: {
           from: 'cultures',
@@ -537,10 +534,8 @@ async getAllUsersOverview(
           as: 'cultures',
         },
       },
-      // Unwind preferences and cultures arrays to merge
       { $unwind: { path: '$preferences', preserveNullAndEmptyArrays: true } },
       { $unwind: { path: '$cultures', preserveNullAndEmptyArrays: true } },
-      // Add necessary fields for Overview
       {
         $addFields: {
           user_id: '$_id',
@@ -581,14 +576,13 @@ async getAllUsersOverview(
           company_size_preferences: '$preferences.company_size_preferences',
         },
       },
-      // Sort, skip, and limit the results
       { $sort: { [sortField]: sortOrderValue } },
       { $skip: offset },
       { $limit: limit },
-      // Project the final shape of the overview
+
       {
         $project: {
-          _id: 0, // Exclude the original _id field
+          _id: 0, 
           user_id: 1,
           phone_number: 1,
           email: 1,
