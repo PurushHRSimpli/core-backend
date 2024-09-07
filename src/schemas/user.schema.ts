@@ -30,7 +30,7 @@ export const userSchema = new mongoose.Schema<User>(
     },
     privacy_mode: {
       type: String,
-      default: "Public",
+      default: "public",
       enum: privacyMode,
     },
     profile_pic: String,
