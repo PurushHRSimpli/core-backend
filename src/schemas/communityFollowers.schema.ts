@@ -3,7 +3,7 @@ import { CommunityFollowers } from "src/interface/communityFollowers.interface";
 import { CommunityModel } from "./community.schema";
 import { UserModel } from "./user.schema";
 
-export const followersSchema = new mongoose.Schema<CommunityFollowers>(
+export const communityFollowersSchema = new mongoose.Schema<CommunityFollowers>(
   {
     community_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -25,4 +25,8 @@ export const followersSchema = new mongoose.Schema<CommunityFollowers>(
 );
 
 export const FollowersModel: mongoose.Model<CommunityFollowers> =
-  mongoose.model<CommunityFollowers>("followers", followersSchema, "followers");
+  mongoose.model<CommunityFollowers>(
+    "followers",
+    communityFollowersSchema,
+    "followers"
+  );

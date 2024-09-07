@@ -9,6 +9,7 @@ import {
   UpdatePasswordThroughSettingsDto,
   UpdatePrivacyMode,
   UpdateGeneralSettings,
+  FollowersAndBookmarksDto,
 } from "../dto/userDto";
 import { constants } from "../helper/constants";
 import { LoggerService } from "../logger/logger.service";
@@ -17,6 +18,9 @@ import { PasswordService } from "../services/password.service";
 import { UserModel } from "src/schemas/user.schema";
 import { Preference } from "src/interface/preference.interface";
 import { PreferenceDto } from "src/dto/preferenceDto";
+import { Followers } from "src/interface/followers.interface";
+import { Bookmarks } from "src/interface/bookmark.interface";
+import { ObjectUnsubscribedError } from "rxjs";
 
 @Injectable()
 export class UserService {
@@ -26,6 +30,10 @@ export class UserService {
     private userModel: mongoose.Model<User>,
     @Inject(constants.PREFERENCE_MODEL)
     private preferenceModel: mongoose.Model<Preference>,
+    @Inject(constants.FOLLOWERS_MODEL)
+    private followersModel: mongoose.Model<Followers>,
+    @Inject(constants.BOOKMARKS_MODEL)
+    private bookmarksModel: mongoose.Model<Bookmarks>,
     private logger: LoggerService,
     private jwtService: JwtService,
     private passwordService: PasswordService
@@ -420,6 +428,64 @@ export class UserService {
     } catch (err) {
       this.logger.error(
         `updateGeneralSettings failed with userId - ${userId} with error ${err}`,
+        `${this.AppName}`
+      );
+      throw new HttpException(
+        {
+          status: err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+          message: err?.message ?? "Something went wrong",
+        },
+        err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async followUser(
+    updateDto: FollowersAndBookmarksDto,
+    userId: string
+  ): Promise<Followers> {
+    this.logger.log(
+      `followUser started by userid - ${userId}`,
+      `${this.AppName}`
+    );
+    try {
+      updateDto.follower_id = new mongoose.Types.ObjectId(userId);
+      const followers: Followers = new this.followersModel(updateDto);
+      this.logger.log(
+        `followUser ended by userid - ${userId}`,
+        `${this.AppName}`
+      );
+      return await followers.save();
+    } catch (err) {
+      this.logger.error(
+        `followUser failed by userId - ${userId} with error ${err}`,
+        `${this.AppName}`
+      );
+      throw new HttpException(
+        {
+          status: err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+          message: err?.message ?? "Something went wrong",
+        },
+        err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async bookmarkUser(
+    updateDto: FollowersAndBookmarksDto,
+    userId: string
+  ): Promise<Bookmarks> {
+    this.logger.log(
+      `bookmarkUser started by userid - ${userId}`,
+      `${this.AppName}`
+    );
+    try {
+      updateDto.bookmarked_by = new mongoose.Types.ObjectId(userId);
+      const bookmark: Bookmarks = new this.bookmarksModel(updateDto);
+      return await bookmark.save();
+    } catch (err) {
+      this.logger.error(
+        `bookmarkUser failed by userId - ${userId} with error ${err}`,
         `${this.AppName}`
       );
       throw new HttpException(
