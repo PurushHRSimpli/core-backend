@@ -1,6 +1,8 @@
 import { Document } from "mongoose";
 
 export interface Preference extends Document {
+  interested_technologies: string[];
+  interested_markets: string[];
   readonly user_id: string;
   readonly where_in_job_search: string;
   readonly sponsorship_requirement_to_work_in_us: boolean;

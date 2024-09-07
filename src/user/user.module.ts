@@ -11,6 +11,8 @@ import { JwtModule } from "@nestjs/jwt";
 import { PasswordService } from "src/services/password.service";
 import { Preference } from "src/interface/preference.interface";
 import { preferenceSchema } from "src/schemas/preference.schema";
+import { Culture } from "src/interface/culture.interface";
+import { CultureSchema } from "src/schemas/culture.schema";
 import { Followers } from "src/interface/followers.interface";
 import { Bookmarks } from "src/interface/bookmark.interface";
 import { bookmarkSchema } from "src/schemas/bookmark.schema";
@@ -41,6 +43,13 @@ import { followersSchema } from "src/schemas/followers.schema";
           "preference",
           preferenceSchema
         );
+      },
+      inject: [constants.DATABASE_CONNECTION],
+    },
+    {
+      provide: constants.CULTURE_MODEL,
+      useFactory: async (connection: Connection) => {
+        return await connection.model<Culture>("culture", CultureSchema);
       },
       inject: [constants.DATABASE_CONNECTION],
     },

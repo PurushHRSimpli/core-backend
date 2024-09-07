@@ -10,6 +10,8 @@ import {
   UseGuards,
   Req,
   Put,
+  Param,
+  Query,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { User, loginUser } from "../interface/user.interface";
@@ -29,6 +31,9 @@ import { AuthGuard } from "../guards/auth.guard";
 import { ResponseMessage } from "../decorators/responseMessageDecator";
 import { Preference } from "src/interface/preference.interface";
 import { PreferenceDto } from "src/dto/preferenceDto";
+import { Culture } from "src/interface/culture.interface";
+import { CultureDto } from "src/dto/cultureDto";
+import { OverviewDto } from "src/dto/overviewDto";
 import { Followers } from "src/interface/followers.interface";
 import { Bookmarks } from "src/interface/bookmark.interface";
 
@@ -156,6 +161,22 @@ export class UserController {
 
   @HttpCode(200)
   @UseGuards(AuthGuard)
+  @Put("/settings/culture")
+  @ResponseMessage("Culture updated successfully")
+  async addorUpdateCulture(
+    @Body() cultureDto: CultureDto,
+    @Req() req
+  ): Promise<Culture> {
+    const userId = req?.user?.userId;
+    this.logger.log(
+      `addOrUpdateCulture started with userid - ${userId}`,
+      `${this.AppName}`
+    );
+    return await this.userService.addOrUpdateCultureByUser(userId, cultureDto);
+  }
+
+  @HttpCode(200)
+  @UseGuards(AuthGuard)
   @Put("/settings/password")
   @ResponseMessage("Password updated successfully")
   async updatePasswordThroughSettings(
@@ -222,6 +243,21 @@ export class UserController {
   }
 
   @HttpCode(200)
+  @Get("/overview")
+  @UseGuards(AuthGuard)
+  @ResponseMessage("General updated successfully")
+  async getOverviewByUserId(@Req() req): Promise<OverviewDto> {
+    const userId = req?.user?.userId;
+    this.logger.log(
+      `getOverviewByUserId started for userId - ${userId}`,
+      `${this.AppName}`
+    );
+
+    const overview = await this.userService.getOverviewByUser(userId);
+
+    return overview;
+  }
+
   @UseGuards(AuthGuard)
   @Put("/follow")
   @ResponseMessage("User followed successfully")
@@ -251,5 +287,27 @@ export class UserController {
       `${this.AppName}`
     );
     return await this.userService.bookmarkUser(uploadDto, userId);
+  }
+  @HttpCode(200)
+  @Get("/overviews")
+  @UseGuards(AuthGuard)
+  @ResponseMessage("Fetched overviews successfully")
+  async getAllUsersOverview(
+    @Req() req,
+    @Query("sortField") sortField: string = "full_name", // Default sort by 'full_name'
+    @Query("sortOrder") sortOrder: "asc" | "desc" = "asc", // Default sort order is 'asc'
+    @Query("offset") offset: number = 0, // Default offset is 0
+    @Query("limit") limit: number = 10 // Default limit is 10
+  ): Promise<OverviewDto[]> {
+    this.logger.log(`getAllUsersOverview started`, `${this.AppName}`);
+
+    const overviews = await this.userService.getAllUsersOverview(
+      sortField,
+      sortOrder,
+      offset,
+      limit
+    );
+
+    return overviews;
   }
 }
