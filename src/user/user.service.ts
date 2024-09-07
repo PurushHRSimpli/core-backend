@@ -9,6 +9,7 @@ import {
   UpdatePasswordThroughSettingsDto,
   UpdatePrivacyMode,
   UpdateGeneralSettings,
+  FollowersAndBookmarksDto,
 } from "../dto/userDto";
 import { constants } from "../helper/constants";
 import { LoggerService } from "../logger/logger.service";
@@ -23,6 +24,9 @@ import { Overview } from "../interface/overview.interface";
 import { OverviewDto } from "../dto/overviewDto";
 import { CultureModel } from "src/schemas/culture.schema";
 import { PreferenceModel } from "src/schemas/preference.schema";
+import { Followers } from "src/interface/followers.interface";
+import { Bookmarks } from "src/interface/bookmark.interface";
+import { ObjectUnsubscribedError } from "rxjs";
 
 @Injectable()
 export class UserService {
@@ -34,6 +38,10 @@ export class UserService {
     private preferenceModel: mongoose.Model<Preference>,
     @Inject(constants.CULTURE_MODEL)
     private cultureModel: mongoose.Model<Culture>,
+    @Inject(constants.FOLLOWERS_MODEL)
+    private followersModel: mongoose.Model<Followers>,
+    @Inject(constants.BOOKMARKS_MODEL)
+    private bookmarksModel: mongoose.Model<Bookmarks>,
     private logger: LoggerService,
     private jwtService: JwtService,
     private passwordService: PasswordService
@@ -335,56 +343,69 @@ export class UserService {
     }
   }
 
-
-async getOverviewByUser(userId: string): Promise<OverviewDto | null> {
-  this.logger.log(`getOverviewByUser started for userId - ${userId}`, `${this.AppName}`);
-  
-  try {
-    const culture: Culture | null = await this.cultureModel.findOne({ user_id: userId }).lean().exec();
-    const preference: Preference | null = await this.preferenceModel.findOne({ user_id: userId }).lean().exec();
-
-    if (!culture || !preference) {
-      return null;
-    }
-
-    const overviewDTO: OverviewDto = {
-      user_id: userId,
-      description: culture.description,
-      motivation: culture.motivation,
-      career_track_next_five_years: culture.career_track_next_five_years,
-      working_environment: culture.working_environment,
-      remote_working_policy: culture.remote_working_policy,
-      quiet_office: culture.quiet_office,
-      interested_markets: preference.interested_markets,
-      not_interested_markets: culture.not_interested_markets,
-      interested_technologies: culture.interested_technologies,
-      not_interested_technologies: culture.not_interested_technologies,
-      where_in_job_search: preference.where_in_job_search,
-      sponsorship_requirement_to_work_in_us: preference.sponsorship_requirement_to_work_in_us,
-      legally_to_work_in_us: preference.legally_to_work_in_us,
-      job_type: preference.job_type,
-      preferred_locations: preference.preferred_locations,
-      open_to_work_remotely: preference.open_to_work_remotely,
-      desired_salary_currency: preference.desired_salary_currency,
-      desired_salary_amount: preference.desired_salary_amount,
-      company_size_preferences: preference.company_size_preferences,
-    };
-
-    this.logger.log(`getOverviewByUser ended for userId - ${userId}`, `${this.AppName}`);
-    return overviewDTO;
-  } catch (error) {
-    this.logger.error(`getOverviewByUser failed for userId - ${userId} with error ${error}`, `${this.AppName}`);
-    throw new HttpException(
-      {
-        status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
-        message: error?.message ?? "Something went wrong",
-      },
-      error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+  async getOverviewByUser(userId: string): Promise<OverviewDto | null> {
+    this.logger.log(
+      `getOverviewByUser started for userId - ${userId}`,
+      `${this.AppName}`
     );
-  }
-}
 
-  
+    try {
+      const culture: Culture | null = await this.cultureModel
+        .findOne({ user_id: userId })
+        .lean()
+        .exec();
+      const preference: Preference | null = await this.preferenceModel
+        .findOne({ user_id: userId })
+        .lean()
+        .exec();
+
+      if (!culture || !preference) {
+        return null;
+      }
+
+      const overviewDTO: OverviewDto = {
+        user_id: userId,
+        description: culture.description,
+        motivation: culture.motivation,
+        career_track_next_five_years: culture.career_track_next_five_years,
+        working_environment: culture.working_environment,
+        remote_working_policy: culture.remote_working_policy,
+        quiet_office: culture.quiet_office,
+        interested_markets: preference.interested_markets,
+        not_interested_markets: culture.not_interested_markets,
+        interested_technologies: culture.interested_technologies,
+        not_interested_technologies: culture.not_interested_technologies,
+        where_in_job_search: preference.where_in_job_search,
+        sponsorship_requirement_to_work_in_us:
+          preference.sponsorship_requirement_to_work_in_us,
+        legally_to_work_in_us: preference.legally_to_work_in_us,
+        job_type: preference.job_type,
+        preferred_locations: preference.preferred_locations,
+        open_to_work_remotely: preference.open_to_work_remotely,
+        desired_salary_currency: preference.desired_salary_currency,
+        desired_salary_amount: preference.desired_salary_amount,
+        company_size_preferences: preference.company_size_preferences,
+      };
+
+      this.logger.log(
+        `getOverviewByUser ended for userId - ${userId}`,
+        `${this.AppName}`
+      );
+      return overviewDTO;
+    } catch (error) {
+      this.logger.error(
+        `getOverviewByUser failed for userId - ${userId} with error ${error}`,
+        `${this.AppName}`
+      );
+      throw new HttpException(
+        {
+          status: error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error?.message ?? "Something went wrong",
+        },
+        error?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 
   async updatePasswordThroughSettings(
     updateDto: UpdatePasswordThroughSettingsDto,
@@ -515,6 +536,64 @@ async getOverviewByUser(userId: string): Promise<OverviewDto | null> {
     } catch (err) {
       this.logger.error(
         `updateGeneralSettings failed with userId - ${userId} with error ${err}`,
+        `${this.AppName}`
+      );
+      throw new HttpException(
+        {
+          status: err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+          message: err?.message ?? "Something went wrong",
+        },
+        err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async followUser(
+    updateDto: FollowersAndBookmarksDto,
+    userId: string
+  ): Promise<Followers> {
+    this.logger.log(
+      `followUser started by userid - ${userId}`,
+      `${this.AppName}`
+    );
+    try {
+      updateDto.follower_id = new mongoose.Types.ObjectId(userId);
+      const followers: Followers = new this.followersModel(updateDto);
+      this.logger.log(
+        `followUser ended by userid - ${userId}`,
+        `${this.AppName}`
+      );
+      return await followers.save();
+    } catch (err) {
+      this.logger.error(
+        `followUser failed by userId - ${userId} with error ${err}`,
+        `${this.AppName}`
+      );
+      throw new HttpException(
+        {
+          status: err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+          message: err?.message ?? "Something went wrong",
+        },
+        err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  async bookmarkUser(
+    updateDto: FollowersAndBookmarksDto,
+    userId: string
+  ): Promise<Bookmarks> {
+    this.logger.log(
+      `bookmarkUser started by userid - ${userId}`,
+      `${this.AppName}`
+    );
+    try {
+      updateDto.bookmarked_by = new mongoose.Types.ObjectId(userId);
+      const bookmark: Bookmarks = new this.bookmarksModel(updateDto);
+      return await bookmark.save();
+    } catch (err) {
+      this.logger.error(
+        `bookmarkUser failed by userId - ${userId} with error ${err}`,
         `${this.AppName}`
       );
       throw new HttpException(

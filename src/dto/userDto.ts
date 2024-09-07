@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsEmail,
   IsEnum,
+  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -11,6 +12,7 @@ import {
   IsUrl,
   Length,
 } from "class-validator";
+import mongoose from "mongoose";
 import { currentRole, privacyMode } from "src/enums/user.enum";
 
 export class SignUpDto {
@@ -123,4 +125,17 @@ export class UpdateGeneralSettings {
   @IsOptional()
   @IsUrl()
   profile_pic: string;
+}
+
+export class FollowersAndBookmarksDto {
+  @IsMongoId()
+  parent_user_id: mongoose.Schema.Types.ObjectId;
+
+  @IsOptional()
+  @IsMongoId()
+  bookmarked_by: mongoose.Types.ObjectId;
+
+  @IsOptional()
+  @IsMongoId()
+  follower_id: mongoose.Types.ObjectId;
 }

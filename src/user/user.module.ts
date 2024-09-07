@@ -13,6 +13,10 @@ import { Preference } from "src/interface/preference.interface";
 import { preferenceSchema } from "src/schemas/preference.schema";
 import { Culture } from "src/interface/culture.interface";
 import { CultureSchema } from "src/schemas/culture.schema";
+import { Followers } from "src/interface/followers.interface";
+import { Bookmarks } from "src/interface/bookmark.interface";
+import { bookmarkSchema } from "src/schemas/bookmark.schema";
+import { followersSchema } from "src/schemas/followers.schema";
 
 @Module({
   imports: [
@@ -45,10 +49,21 @@ import { CultureSchema } from "src/schemas/culture.schema";
     {
       provide: constants.CULTURE_MODEL,
       useFactory: async (connection: Connection) => {
-        return await connection.model<Culture>(
-          "culture",
-          CultureSchema
-        );
+        return await connection.model<Culture>("culture", CultureSchema);
+      },
+      inject: [constants.DATABASE_CONNECTION],
+    },
+    {
+      provide: constants.FOLLOWERS_MODEL,
+      useFactory: async (connection: Connection) => {
+        return await connection.model<Followers>("followers", followersSchema);
+      },
+      inject: [constants.DATABASE_CONNECTION],
+    },
+    {
+      provide: constants.BOOKMARKS_MODEL,
+      useFactory: async (connection: Connection) => {
+        return await connection.model<Bookmarks>("bookmarks", bookmarkSchema);
       },
       inject: [constants.DATABASE_CONNECTION],
     },

@@ -22,6 +22,7 @@ import {
   UpdatePasswordThroughSettingsDto,
   UpdatePrivacyMode,
   UpdateGeneralSettings,
+  FollowersAndBookmarksDto,
 } from "src/dto/userDto";
 import { constants } from "../helper/constants";
 import { LoggerService } from "../logger/logger.service";
@@ -32,6 +33,8 @@ import { PreferenceDto } from "src/dto/preferenceDto";
 import { Culture } from "src/interface/culture.interface";
 import { CultureDto } from "src/dto/cultureDto";
 import { OverviewDto } from "src/dto/overviewDto";
+import { Followers } from "src/interface/followers.interface";
+import { Bookmarks } from "src/interface/bookmark.interface";
 
 @Controller("user")
 export class UserController {
@@ -252,5 +255,36 @@ export class UserController {
     const overview = await this.userService.getOverviewByUser(userId);
 
     return overview;
+  }
+
+  @UseGuards(AuthGuard)
+  @Put("/follow")
+  @ResponseMessage("User followed successfully")
+  async followUser(
+    @Body() uploadDto: FollowersAndBookmarksDto,
+    @Req() req
+  ): Promise<Followers> {
+    const userId = req?.user?.userId;
+    this.logger.log(
+      `followUser started by userid - ${userId}`,
+      `${this.AppName}`
+    );
+    return await this.userService.followUser(uploadDto, userId);
+  }
+
+  @HttpCode(200)
+  @UseGuards(AuthGuard)
+  @Put("/bookmark")
+  @ResponseMessage("User bookmarked successfully")
+  async bookmarkUser(
+    @Body() uploadDto: FollowersAndBookmarksDto,
+    @Req() req
+  ): Promise<Bookmarks> {
+    const userId = req?.user?.userId;
+    this.logger.log(
+      `bookmarkUser started by userid - ${userId}`,
+      `${this.AppName}`
+    );
+    return await this.userService.bookmarkUser(uploadDto, userId);
   }
 }
