@@ -9,9 +9,10 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TransformInterceptor } from './interceptors/responseInterceptor';
 import { CompanyModule } from './company/company.module';
 import { LoginModule } from './login/login.module';
+import { CommunityModule } from './community/community.module';
 
 @Module({
-    imports: [MongodbModule, UserModule, RoleModule, CompanyModule, LoginModule],
+    imports: [MongodbModule, UserModule, RoleModule, CompanyModule,CommunityModule, LoginModule],
     controllers: [AppController],
     providers: [
         {

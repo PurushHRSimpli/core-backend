@@ -24,9 +24,9 @@ export const communityFollowersSchema = new mongoose.Schema<CommunityFollowers>(
   { timestamps: true }
 );
 
-export const FollowersModel: mongoose.Model<CommunityFollowers> =
+export const CommunityFollowersModel: mongoose.Model<CommunityFollowers> =
   mongoose.model<CommunityFollowers>(
-    "followers",
+    "communityFollowers",
     communityFollowersSchema,
-    "followers"
+    "communityFollowers"
   );
