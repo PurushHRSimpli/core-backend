@@ -7,7 +7,8 @@ import {
   Headers,
   HttpException,
   HttpStatus,
-  Query
+  Query,
+  Req,
 } from "@nestjs/common";
 import { ResponseMessage } from "src/decorators/responseMessageDecator";
 import { CommunityDto } from "src/dto/communityDto";
@@ -18,7 +19,7 @@ import { Community } from "src/interface/community.interface";
 import { CommunityFollowers } from "src/interface/communityFollowers.interface";
 import { CommunityFollowersDto } from "src/dto/communityFollwerDto";
 
-@Controller('community')
+@Controller("community")
 export class CommunityController {
   private readonly AppName: string = "CommunityController";
 
@@ -27,13 +28,12 @@ export class CommunityController {
     private logger: LoggerService
   ) {}
 
-
   @HttpCode(201)
   @Post("/create")
   @ResponseMessage("Community Created Successfully")
   async communitySignUp(
     @Body() signUpCommunity: CommunityDto,
-    @Headers("secret") headers: string 
+    @Req() req
   ): Promise<Community> {
     this.logger.log(
       `communitySignUp initiated for community name - ${signUpCommunity?.name}`,
@@ -61,8 +61,7 @@ export class CommunityController {
   @Post("/followers/add")
   @ResponseMessage("Follower added or updated successfully")
   async addOrUpdateFollower(
-    @Body() followerData: CommunityFollowersDto,
-    @Headers("secret") headers: string
+    @Body() followerData: CommunityFollowersDto
   ): Promise<CommunityFollowers> {
     this.logger.log(
       `addOrUpdateFollower initiated for community_id - ${followerData?.community_id}`,
@@ -92,10 +91,7 @@ export class CommunityController {
   async viewAllCommunities(
     @Headers("secret") headers: string
   ): Promise<Community[]> {
-    this.logger.log(
-      `viewAllCommunities initiated`,
-      `${this.AppName}`
-    );
+    this.logger.log(`viewAllCommunities initiated`, `${this.AppName}`);
 
     if (headers !== constants?.secret) {
       this.logger.error(
@@ -118,7 +114,7 @@ export class CommunityController {
   @Get("/followers")
   @ResponseMessage("Followers fetched successfully")
   async viewAllFollowers(
-    @Query('communityId') communityId: string,
+    @Query("communityId") communityId: string,
     @Headers("secret") headers: string
   ): Promise<CommunityFollowers[]> {
     this.logger.log(

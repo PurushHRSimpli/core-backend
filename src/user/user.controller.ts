@@ -245,7 +245,7 @@ export class UserController {
   @HttpCode(200)
   @Get("/overview")
   @UseGuards(AuthGuard)
-  @ResponseMessage("General updated successfully")
+  @ResponseMessage("Overview found successfully")
   async getOverviewByUserId(@Req() req): Promise<OverviewDto> {
     const userId = req?.user?.userId;
     this.logger.log(

@@ -803,6 +803,7 @@ export class UserService {
     );
     try {
       updateDto.follower_id = new mongoose.Types.ObjectId(userId);
+      // check if allready followed
       const followers: Followers = new this.followersModel(updateDto);
       this.logger.log(
         `followUser ended by userid - ${userId}`,
@@ -834,6 +835,7 @@ export class UserService {
     );
     try {
       updateDto.bookmarked_by = new mongoose.Types.ObjectId(userId);
+      // check if allready bookmarked
       const bookmark: Bookmarks = new this.bookmarksModel(updateDto);
       return await bookmark.save();
     } catch (err) {
