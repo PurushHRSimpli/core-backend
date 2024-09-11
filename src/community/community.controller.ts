@@ -35,52 +35,29 @@ export class CommunityController {
     @Body() signUpCommunity: CommunityDto,
     @Req() req
   ): Promise<Community> {
+    const userId = req?.user?.userId;  
     this.logger.log(
-      `communitySignUp initiated for community name - ${signUpCommunity?.name}`,
+      `communitySignUp initiated for community name - ${signUpCommunity?.name}, by user - ${userId}`,
       `${this.AppName}`
     );
-
-    if (headers !== constants?.secret) {
-      this.logger.error(
-        `communitySignUp failed due to invalid secret - ${headers}`,
-        `${this.AppName}`
-      );
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          message: "Authorization Failed",
-        },
-        HttpStatus.UNAUTHORIZED
-      );
-    }
-
+  
+    signUpCommunity.community_owner = userId;
+  
     return await this.communityService.communitySignUp(signUpCommunity);
   }
+  
 
   @HttpCode(200)
   @Post("/followers/add")
   @ResponseMessage("Follower added or updated successfully")
   async addOrUpdateFollower(
-    @Body() followerData: CommunityFollowersDto
+    @Body() followerData: CommunityFollowersDto,
+    @Req() req
   ): Promise<CommunityFollowers> {
     this.logger.log(
       `addOrUpdateFollower initiated for community_id - ${followerData?.community_id}`,
       `${this.AppName}`
     );
-
-    if (headers !== constants?.secret) {
-      this.logger.error(
-        `addOrUpdateFollower failed due to invalid secret - ${headers}`,
-        `${this.AppName}`
-      );
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          message: "Authorization Failed",
-        },
-        HttpStatus.UNAUTHORIZED
-      );
-    }
 
     return await this.communityService.addOrUpdateFollower(followerData);
   }
@@ -88,54 +65,42 @@ export class CommunityController {
   @HttpCode(200)
   @Get("/all")
   @ResponseMessage("Communities fetched successfully")
-  async viewAllCommunities(
-    @Headers("secret") headers: string
-  ): Promise<Community[]> {
+  async viewAllCommunities(): Promise<Community[]> {
     this.logger.log(`viewAllCommunities initiated`, `${this.AppName}`);
-
-    if (headers !== constants?.secret) {
-      this.logger.error(
-        `viewAllCommunities failed due to invalid secret - ${headers}`,
-        `${this.AppName}`
-      );
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          message: "Authorization Failed",
-        },
-        HttpStatus.UNAUTHORIZED
-      );
-    }
-
+  
     return await this.communityService.viewAllCommunities();
   }
+  
 
   @HttpCode(200)
   @Get("/followers")
   @ResponseMessage("Followers fetched successfully")
   async viewAllFollowers(
     @Query("communityId") communityId: string,
-    @Headers("secret") headers: string
+    @Query("followerId") followerId: string,
+    @Query("communityOwnerId") communityOwnerId: string
   ): Promise<CommunityFollowers[]> {
     this.logger.log(
       `viewAllFollowers initiated for community_id - ${communityId}`,
       `${this.AppName}`
     );
-
-    if (headers !== constants?.secret) {
+  
+    if (!communityId || !followerId || !communityOwnerId) {
       this.logger.error(
-        `viewAllFollowers failed due to invalid secret - ${headers}`,
+        `viewAllFollowers failed due to missing parameters - communityId: ${communityId}, followerId: ${followerId}, communityOwnerId: ${communityOwnerId}`,
         `${this.AppName}`
       );
       throw new HttpException(
         {
-          status: HttpStatus.UNAUTHORIZED,
-          message: "Authorization Failed",
+          status: HttpStatus.BAD_REQUEST,
+          message: "Missing required parameters",
         },
-        HttpStatus.UNAUTHORIZED
+        HttpStatus.BAD_REQUEST
       );
     }
-
-    return await this.communityService.viewAllFollowers(communityId);
+  
+    return await this.communityService.getAllFollowers(communityId, followerId, communityOwnerId);
   }
+  
+  
 }
