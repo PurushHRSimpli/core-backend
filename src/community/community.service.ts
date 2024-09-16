@@ -7,6 +7,7 @@ import { LoggerService } from "src/logger/logger.service";
 import { JwtService } from "@nestjs/jwt";
 import { CommunityFollowers } from "src/interface/communityFollowers.interface";
 import { CommunityFollowersDto } from "src/dto/communityFollwerDto";
+import { UserService } from "src/user/user.service";
 
 @Injectable()
 export class CommunityService {
@@ -17,7 +18,8 @@ export class CommunityService {
     private communityModel: mongoose.Model<Community>,
     private logger: LoggerService,
     private jwtService: JwtService,
-    @Inject(constants.COMMUNITYFOLOWERS_MODEL) 
+    private userService: UserService,
+    @Inject(constants.COMMUNITYFOLOWERS_MODEL)
     private communityFollowersModel: mongoose.Model<CommunityFollowers>
   ) {}
 
@@ -48,7 +50,9 @@ export class CommunityService {
       }
 
       const createCommunity = new this.communityModel(signUpCommunity);
-
+      await this.userService.markUserAsCommunityOwner(
+        signUpCommunity.community_owner
+      );
       this.logger.log(
         `Community creation in progress - ${JSON.stringify(createCommunity)}`,
         `${this.AppName}`
@@ -126,13 +130,11 @@ export class CommunityService {
     this.logger.log(`viewAllCommunities started`, `${this.AppName}`);
 
     try {
+      // populate
       const communities = await this.communityModel.find().lean().exec();
 
       if (!communities.length) {
-        this.logger.warn(
-          `No communities found`,
-          `${this.AppName}`
-        );
+        this.logger.warn(`No communities found`, `${this.AppName}`);
         throw new HttpException(
           {
             status: HttpStatus.NOT_FOUND,
@@ -162,15 +164,23 @@ export class CommunityService {
     }
   }
 
-  async getAllFollowers(communityId: string, followerId: string, communityOwnerId: string): Promise<CommunityFollowers[]> {
-    this.logger.log(`viewAllFollowers started for community - ${communityId}`, `${this.AppName}`);
-  
+  async getAllFollowers(
+    communityId: string,
+    followerId: string
+  ): Promise<CommunityFollowers[]> {
+    this.logger.log(
+      `viewAllFollowers started for community - ${communityId}`,
+      `${this.AppName}`
+    );
+
     try {
+      //check followerId ia a part of community or communityOwnerId
+      //populate
       const followers = await this.communityFollowersModel
         .find({ community_id: communityId })
         .lean()
         .exec();
-  
+
       if (!followers.length) {
         this.logger.warn(
           `No followers found for community - ${communityId}`,
@@ -184,7 +194,7 @@ export class CommunityService {
           HttpStatus.NOT_FOUND
         );
       }
-  
+
       this.logger.log(
         `Followers fetched successfully for community ${communityId}: ${followers.length} records found`,
         `${this.AppName}`
@@ -204,14 +214,19 @@ export class CommunityService {
       );
     }
   }
-  
 
   async findCommunityById(communityId: string): Promise<Community> {
-    this.logger.log(`findCommunityById initiated for community - ${communityId}`, `${this.AppName}`);
-  
+    this.logger.log(
+      `findCommunityById initiated for community - ${communityId}`,
+      `${this.AppName}`
+    );
+
     try {
-      const community = await this.communityModel.findById(communityId).lean().exec();
-  
+      const community = await this.communityModel
+        .findById(communityId)
+        .lean()
+        .exec();
+
       if (!community) {
         this.logger.warn(
           `Community not found for community_id - ${communityId}`,
@@ -225,7 +240,7 @@ export class CommunityService {
           HttpStatus.NOT_FOUND
         );
       }
-  
+
       this.logger.log(
         `Community found for community_id - ${communityId}`,
         `${this.AppName}`

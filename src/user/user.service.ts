@@ -371,10 +371,10 @@ export class UserService {
           },
         },
         {
-          $unwind: { path: "$preferences", preserveNullAndEmptyArrays: true }, 
+          $unwind: { path: "$preferences", preserveNullAndEmptyArrays: true },
         },
         {
-          $unwind: { path: "$cultures", preserveNullAndEmptyArrays: true }, 
+          $unwind: { path: "$cultures", preserveNullAndEmptyArrays: true },
         },
         {
           $project: {
@@ -801,15 +801,15 @@ export class UserService {
       `followUser started by userId - ${userId}`,
       `${this.AppName}`
     );
-  
+
     try {
       updateDto.follower_id = new mongoose.Types.ObjectId(userId);
-  
-      const existingFollow = await this.followersModel.findOne({
+
+      const existingFollow: Followers = await this.followersModel.findOne({
         parent_user_id: updateDto.parent_user_id,
         follower_id: updateDto.follower_id,
       });
-  
+
       if (existingFollow) {
         this.logger.warn(
           `followUser failed - UserId ${userId} is already following parentUserId ${updateDto.parent_user_id}`,
@@ -817,13 +817,13 @@ export class UserService {
         );
         throw new HttpException(
           {
-            status: HttpStatus.CONFLICT,
+            status: HttpStatus.BAD_REQUEST,
             message: "User is already following this user",
           },
-          HttpStatus.CONFLICT
+          HttpStatus.BAD_REQUEST
         );
       }
-  
+
       const follower: Followers = new this.followersModel(updateDto);
       this.logger.log(
         `followUser ended successfully for userId - ${userId}`,
@@ -844,7 +844,6 @@ export class UserService {
       );
     }
   }
-  
 
   async bookmarkUser(
     updateDto: FollowersAndBookmarksDto,
@@ -854,15 +853,15 @@ export class UserService {
       `bookmarkUser started by userId - ${userId}`,
       `${this.AppName}`
     );
-  
+
     try {
       updateDto.bookmarked_by = new mongoose.Types.ObjectId(userId);
-  
-      const existingBookmark = await this.bookmarksModel.findOne({
+
+      const existingBookmark: Bookmarks = await this.bookmarksModel.findOne({
         parent_user_id: updateDto.parent_user_id,
         bookmarked_by: updateDto.bookmarked_by,
       });
-  
+
       if (existingBookmark) {
         this.logger.warn(
           `bookmarkUser failed - Bookmark already exists for userId: ${userId} and parentUserId: ${updateDto.parent_user_id}`,
@@ -870,13 +869,13 @@ export class UserService {
         );
         throw new HttpException(
           {
-            status: HttpStatus.CONFLICT,
+            status: HttpStatus.BAD_REQUEST,
             message: "Bookmark already exists",
           },
-          HttpStatus.CONFLICT
+          HttpStatus.BAD_REQUEST
         );
       }
-  
+
       const bookmark: Bookmarks = new this.bookmarksModel(updateDto);
       return await bookmark.save();
     } catch (err) {
@@ -893,5 +892,17 @@ export class UserService {
       );
     }
   }
-  
+
+  async markUserAsCommunityOwner(userId: string): Promise<User> {
+    const user: User = await this.userModel
+      .findByIdAndUpdate(
+        userId,
+        { is_community_owner: true },
+        { new: true, upsert: false }
+      )
+      .lean()
+      .exec();
+    // try catch
+    return user;
+  }
 }

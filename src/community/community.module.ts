@@ -8,8 +8,12 @@ import { constants } from "../helper/constants";
 import { Connection } from "mongoose";
 import { Community } from "src/interface/community.interface";
 import { communitySchema } from "src/schemas/community.schema";
-import { CommunityFollowersModel, communityFollowersSchema } from "src/schemas/communityFollowers.schema";
+import {
+  CommunityFollowersModel,
+  communityFollowersSchema,
+} from "src/schemas/communityFollowers.schema";
 import { CommunityFollowers } from "src/interface/communityFollowers.interface";
+import { UserService } from "src/user/user.service";
 
 @Module({
   imports: [
@@ -25,16 +29,20 @@ import { CommunityFollowers } from "src/interface/communityFollowers.interface";
     {
       provide: constants.COMMUNITY_MODEL,
       useFactory: (connection: Connection) =>
-        connection.model<Community>('Community', communitySchema),
+        connection.model<Community>("Community", communitySchema),
       inject: [constants.DATABASE_CONNECTION],
     },
     {
-      provide: constants.COMMUNITYFOLOWERS_MODEL, 
+      provide: constants.COMMUNITYFOLOWERS_MODEL,
       useFactory: (connection: Connection) =>
-        connection.model<CommunityFollowers>('CommunityFollowers', communityFollowersSchema),
+        connection.model<CommunityFollowers>(
+          "CommunityFollowers",
+          communityFollowersSchema
+        ),
       inject: [constants.DATABASE_CONNECTION],
     },
     CommunityService,
+    UserService,
   ],
   exports: [CommunityService],
 })

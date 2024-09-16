@@ -35,17 +35,16 @@ export class CommunityController {
     @Body() signUpCommunity: CommunityDto,
     @Req() req
   ): Promise<Community> {
-    const userId = req?.user?.userId;  
+    const userId = req?.user?.userId;
     this.logger.log(
       `communitySignUp initiated for community name - ${signUpCommunity?.name}, by user - ${userId}`,
       `${this.AppName}`
     );
-  
+
     signUpCommunity.community_owner = userId;
-  
+
     return await this.communityService.communitySignUp(signUpCommunity);
   }
-  
 
   @HttpCode(200)
   @Post("/followers/add")
@@ -58,7 +57,8 @@ export class CommunityController {
       `addOrUpdateFollower initiated for community_id - ${followerData?.community_id}`,
       `${this.AppName}`
     );
-
+    const userId = req?.user?.userId;
+    followerData.follower_id = userId;
     return await this.communityService.addOrUpdateFollower(followerData);
   }
 
@@ -67,27 +67,26 @@ export class CommunityController {
   @ResponseMessage("Communities fetched successfully")
   async viewAllCommunities(): Promise<Community[]> {
     this.logger.log(`viewAllCommunities initiated`, `${this.AppName}`);
-  
+    // pagination limit and offset
     return await this.communityService.viewAllCommunities();
   }
-  
 
   @HttpCode(200)
   @Get("/followers")
   @ResponseMessage("Followers fetched successfully")
   async viewAllFollowers(
     @Query("communityId") communityId: string,
-    @Query("followerId") followerId: string,
-    @Query("communityOwnerId") communityOwnerId: string
+    @Req() req
   ): Promise<CommunityFollowers[]> {
     this.logger.log(
       `viewAllFollowers initiated for community_id - ${communityId}`,
       `${this.AppName}`
     );
-  
-    if (!communityId || !followerId || !communityOwnerId) {
+    const followerId = req.user.userId;
+
+    if (!communityId) {
       this.logger.error(
-        `viewAllFollowers failed due to missing parameters - communityId: ${communityId}, followerId: ${followerId}, communityOwnerId: ${communityOwnerId}`,
+        `viewAllFollowers failed due to missing parameters - communityId: ${communityId}`,
         `${this.AppName}`
       );
       throw new HttpException(
@@ -98,9 +97,11 @@ export class CommunityController {
         HttpStatus.BAD_REQUEST
       );
     }
-  
-    return await this.communityService.getAllFollowers(communityId, followerId, communityOwnerId);
+
+    // limit offset
+
+    return await this.communityService.getAllFollowers(communityId, followerId);
   }
-  
-  
+
+  // get community by communityid
 }
