@@ -371,10 +371,10 @@ export class UserService {
           },
         },
         {
-          $unwind: { path: "$preferences", preserveNullAndEmptyArrays: true }, // Unwind preferences if available
+          $unwind: { path: "$preferences", preserveNullAndEmptyArrays: true }, 
         },
         {
-          $unwind: { path: "$cultures", preserveNullAndEmptyArrays: true }, // Unwind cultures if available
+          $unwind: { path: "$cultures", preserveNullAndEmptyArrays: true }, 
         },
         {
           $project: {
@@ -798,21 +798,41 @@ export class UserService {
     userId: string
   ): Promise<Followers> {
     this.logger.log(
-      `followUser started by userid - ${userId}`,
+      `followUser started by userId - ${userId}`,
       `${this.AppName}`
     );
+  
     try {
       updateDto.follower_id = new mongoose.Types.ObjectId(userId);
-      // check if allready followed
-      const followers: Followers = new this.followersModel(updateDto);
+  
+      const existingFollow = await this.followersModel.findOne({
+        parent_user_id: updateDto.parent_user_id,
+        follower_id: updateDto.follower_id,
+      });
+  
+      if (existingFollow) {
+        this.logger.warn(
+          `followUser failed - UserId ${userId} is already following parentUserId ${updateDto.parent_user_id}`,
+          `${this.AppName}`
+        );
+        throw new HttpException(
+          {
+            status: HttpStatus.CONFLICT,
+            message: "User is already following this user",
+          },
+          HttpStatus.CONFLICT
+        );
+      }
+  
+      const follower: Followers = new this.followersModel(updateDto);
       this.logger.log(
-        `followUser ended by userid - ${userId}`,
+        `followUser ended successfully for userId - ${userId}`,
         `${this.AppName}`
       );
-      return await followers.save();
+      return await follower.save();
     } catch (err) {
       this.logger.error(
-        `followUser failed by userId - ${userId} with error ${err}`,
+        `followUser failed by userId - ${userId} with error: ${err.message}`,
         `${this.AppName}`
       );
       throw new HttpException(
@@ -824,23 +844,44 @@ export class UserService {
       );
     }
   }
+  
 
   async bookmarkUser(
     updateDto: FollowersAndBookmarksDto,
     userId: string
   ): Promise<Bookmarks> {
     this.logger.log(
-      `bookmarkUser started by userid - ${userId}`,
+      `bookmarkUser started by userId - ${userId}`,
       `${this.AppName}`
     );
+  
     try {
       updateDto.bookmarked_by = new mongoose.Types.ObjectId(userId);
-      // check if allready bookmarked
+  
+      const existingBookmark = await this.bookmarksModel.findOne({
+        parent_user_id: updateDto.parent_user_id,
+        bookmarked_by: updateDto.bookmarked_by,
+      });
+  
+      if (existingBookmark) {
+        this.logger.warn(
+          `bookmarkUser failed - Bookmark already exists for userId: ${userId} and parentUserId: ${updateDto.parent_user_id}`,
+          `${this.AppName}`
+        );
+        throw new HttpException(
+          {
+            status: HttpStatus.CONFLICT,
+            message: "Bookmark already exists",
+          },
+          HttpStatus.CONFLICT
+        );
+      }
+  
       const bookmark: Bookmarks = new this.bookmarksModel(updateDto);
       return await bookmark.save();
     } catch (err) {
       this.logger.error(
-        `bookmarkUser failed by userId - ${userId} with error ${err}`,
+        `bookmarkUser failed by userId - ${userId} with error: ${err.message}`,
         `${this.AppName}`
       );
       throw new HttpException(
@@ -852,4 +893,5 @@ export class UserService {
       );
     }
   }
+  
 }

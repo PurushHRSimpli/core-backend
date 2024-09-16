@@ -162,7 +162,7 @@ export class CommunityService {
     }
   }
 
-  async viewAllFollowers(communityId: string): Promise<CommunityFollowers[]> {
+  async getAllFollowers(communityId: string, followerId: string, communityOwnerId: string): Promise<CommunityFollowers[]> {
     this.logger.log(`viewAllFollowers started for community - ${communityId}`, `${this.AppName}`);
   
     try {
@@ -206,4 +206,43 @@ export class CommunityService {
   }
   
 
+  async findCommunityById(communityId: string): Promise<Community> {
+    this.logger.log(`findCommunityById initiated for community - ${communityId}`, `${this.AppName}`);
+  
+    try {
+      const community = await this.communityModel.findById(communityId).lean().exec();
+  
+      if (!community) {
+        this.logger.warn(
+          `Community not found for community_id - ${communityId}`,
+          `${this.AppName}`
+        );
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            message: "Community not found",
+          },
+          HttpStatus.NOT_FOUND
+        );
+      }
+  
+      this.logger.log(
+        `Community found for community_id - ${communityId}`,
+        `${this.AppName}`
+      );
+      return community;
+    } catch (err) {
+      this.logger.error(
+        `findCommunityById failed for community_id - ${communityId}, error: ${err.message}`,
+        `${this.AppName}`
+      );
+      throw new HttpException(
+        {
+          status: err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+          message: err?.message ?? "Something went wrong",
+        },
+        err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 }
