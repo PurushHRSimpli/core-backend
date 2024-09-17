@@ -894,15 +894,29 @@ export class UserService {
   }
 
   async markUserAsCommunityOwner(userId: string): Promise<User> {
-    const user: User = await this.userModel
-      .findByIdAndUpdate(
-        userId,
-        { is_community_owner: true },
-        { new: true, upsert: false }
-      )
-      .lean()
-      .exec();
-    // try catch
-    return user;
-  }
+    try {
+      const user: User = await this.userModel
+        .findByIdAndUpdate(
+          userId,
+          { is_community_owner: true },
+          { new: true, upsert: false }
+        )
+        .lean()
+        .exec();
+  
+      return user;
+    } catch (err) {
+      this.logger.error(
+        `markUserAsCommunityOwner failed for userId - ${userId} with error: ${err.message}`,
+        `${this.AppName}`
+      );
+      throw new HttpException(
+        {
+          status: err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR,
+          message: err?.message ?? "Failed to mark user as community owner",
+        },
+        err?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }  
 }

@@ -62,20 +62,27 @@ export class CommunityController {
     return await this.communityService.addOrUpdateFollower(followerData);
   }
 
+
   @HttpCode(200)
   @Get("/all")
   @ResponseMessage("Communities fetched successfully")
-  async viewAllCommunities(): Promise<Community[]> {
+  async viewAllCommunities(
+    @Query('limit') limit: number = 10, 
+    @Query('offset') offset: number = 0  
+  ): Promise<Community[]> {
     this.logger.log(`viewAllCommunities initiated`, `${this.AppName}`);
-    // pagination limit and offset
-    return await this.communityService.viewAllCommunities();
+    
+    return await this.communityService.viewAllCommunities(limit, offset);
   }
+  
 
   @HttpCode(200)
   @Get("/followers")
   @ResponseMessage("Followers fetched successfully")
   async viewAllFollowers(
     @Query("communityId") communityId: string,
+    @Query("limit") limit: number = 10, // default limit for pagination
+    @Query("offset") offset: number = 0, // default offset for pagination
     @Req() req
   ): Promise<CommunityFollowers[]> {
     this.logger.log(
@@ -83,7 +90,7 @@ export class CommunityController {
       `${this.AppName}`
     );
     const followerId = req.user.userId;
-
+  
     if (!communityId) {
       this.logger.error(
         `viewAllFollowers failed due to missing parameters - communityId: ${communityId}`,
@@ -97,11 +104,39 @@ export class CommunityController {
         HttpStatus.BAD_REQUEST
       );
     }
-
-    // limit offset
-
-    return await this.communityService.getAllFollowers(communityId, followerId);
+  
+    // Call the service with pagination parameters
+    return await this.communityService.getAllFollowers(communityId, followerId, limit, offset);
   }
+  
 
   // get community by communityid
+
+  @HttpCode(200)
+  @Get("/communityById")
+  @ResponseMessage("Community fetched successfully")
+  async viewCommunityById(@Req() req): Promise<Community> {
+    const communityId = req.query.communityId; 
+    this.logger.log(
+      `viewCommunityById initiated with communityId - ${communityId}`,
+      `CommunityController`
+    );
+
+    if (!communityId) {
+      this.logger.error(
+        `viewCommunityById failed due to missing communityId`,
+        `CommunityController`
+      );
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          message: "Missing communityId in request",
+        },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    return await this.communityService.getCommunityById(communityId);
+  }
+
 }
